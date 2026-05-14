@@ -23,21 +23,60 @@ export type SuggestedCode = {
   flags?: { kind: "ncci" | "modifier" | "lcd" | "documentation"; message: string }[];
 };
 
+export type QueueStatus = "pending" | "in_review" | "done";
+
 export type SampleNote = {
   id: string;
+  /** Stable, fake chart number for inbox display. */
+  chart_id: string;
+  /** Deidentified patient label. Never a real name. */
+  patient_label: string;
+  age: number;
+  sex: "M" | "F";
+  visit_type: "new" | "established";
+  chief_complaint: string;
   title: string;
   setting: string;
   source: string;
+  status: QueueStatus;
+  /** Pre-rendered relative time so static prerender stays deterministic. */
+  received_at: string;
   note: string;
   suggested: SuggestedCode[];
 };
 
+/**
+ * Hardcoded historical KPI numbers for the dashboard.
+ * In a real system these would come from an analytics warehouse.
+ */
+export const STATS = {
+  done_today: 7,
+  done_this_week: 142,
+  accuracy_week: 96.2,
+  avg_tat_hours: 18,
+  top_flags: [
+    { label: "NCCI PTP edit", count: 12 },
+    { label: "Documentation gap", count: 8 },
+    { label: "Modifier missing", count: 5 },
+    { label: "LCD payer-specific", count: 3 },
+  ],
+  daily_throughput: [18, 22, 19, 26, 24, 21, 12], // last 7 days
+} as const;
+
 export const SAMPLE_NOTES: SampleNote[] = [
   {
     id: "em-established-99213",
+    chart_id: "CHT-204891",
+    patient_label: "Patient A",
+    age: 42,
+    sex: "F",
+    visit_type: "established",
+    chief_complaint: "Sinus congestion and facial pressure x 6 days",
     title: "Established patient — sinusitis follow-up",
     setting: "Outpatient family medicine",
     source: "Synthetic, MTSamples-style",
+    status: "pending",
+    received_at: "2h ago",
     note: `CHIEF COMPLAINT: Sinus congestion and facial pressure x 6 days.
 
 HPI: 42-year-old established patient returns for follow-up of acute sinusitis. Reports persistent maxillary pressure, purulent nasal discharge, and post-nasal drip despite a 5-day course of amoxicillin started by urgent care last week. No fever today. No tooth pain. No vision changes. Sleep disrupted by nasal congestion.
@@ -124,9 +163,17 @@ Time spent: 18 minutes face-to-face, MDM moderate complexity.`,
 
   {
     id: "em-new-99203",
+    chart_id: "CHT-204912",
+    patient_label: "Patient B",
+    age: 34,
+    sex: "M",
+    visit_type: "new",
+    chief_complaint: "Right knee pain after fall, weight-bearing limp",
     title: "New patient — knee pain after fall",
     setting: "Outpatient orthopedic urgent care",
     source: "Synthetic, MTSamples-style",
+    status: "pending",
+    received_at: "5m ago",
     note: `CHIEF COMPLAINT: Right knee pain after a fall 2 days ago.
 
 HPI: 34-year-old new patient slipped on icy steps and landed on flexed right knee. Reports immediate pain, mild swelling that night, and difficulty bearing full weight today. Denies hearing a pop. No prior knee injuries. Able to walk with limp. No numbness or tingling distally.
@@ -224,9 +271,17 @@ Time spent: 32 minutes face-to-face. New patient, MDM moderate.`,
 
   {
     id: "em-established-99214",
+    chart_id: "CHT-204903",
+    patient_label: "Patient C",
+    age: 58,
+    sex: "F",
+    visit_type: "established",
+    chief_complaint: "Diabetes follow-up; A1c rising",
     title: "Established patient — diabetes follow-up",
     setting: "Outpatient internal medicine",
     source: "Synthetic, MTSamples-style",
+    status: "in_review",
+    received_at: "1h ago",
     note: `CHIEF COMPLAINT: Diabetes follow-up. A1c review.
 
 HPI: 58-year-old established patient with type 2 diabetes mellitus and hyperlipidemia returns for routine 3-month follow-up. Reports adherence to metformin 1000 mg BID. Home glucose log shows fasting values 130–160 range, post-prandial 180–220. Occasional missed evening dose. Diet has slipped over the holidays. No polyuria, polydipsia, no episodes of hypoglycemia. Vision stable. No foot lesions. Mild paresthesias in toes bilaterally, unchanged from prior visit.

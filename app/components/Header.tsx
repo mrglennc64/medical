@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container } from "./Container";
 
 const NAV = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/demo", label: "Demo" },
   { href: "/architecture", label: "Architecture" },
   { href: "https://github.com/mrglennc64/medical", label: "GitHub", external: true },

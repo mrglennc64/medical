@@ -20,10 +20,10 @@ export default function HomePage() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
-              href="/demo"
+              href="/dashboard"
               className="rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-hover"
             >
-              Try the demo →
+              Open the coder dashboard →
             </Link>
             <Link
               href="/architecture"
@@ -71,11 +71,15 @@ export default function HomePage() {
           <p className="mt-3 text-text-muted">
             I&apos;m available for remote contract or full-time work on healthcare-AI
             systems — autonomous coding, clinical NLP, RCM automation, EHR
-            integration. The fastest read on whether I can do the work is to click{" "}
+            integration. Fastest read on whether I can do the work: open{" "}
+            <Link href="/dashboard" className="text-brand hover:underline">
+              the dashboard
+            </Link>
+            , click a chart into{" "}
             <Link href="/demo" className="text-brand hover:underline">
-              the demo
-            </Link>{" "}
-            and skim{" "}
+              the coding view
+            </Link>
+            , then skim{" "}
             <Link href="/architecture" className="text-brand hover:underline">
               the architecture page
             </Link>

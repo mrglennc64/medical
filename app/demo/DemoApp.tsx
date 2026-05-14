@@ -9,8 +9,14 @@ import { DecisionTally } from "./DecisionTally";
 
 type DecisionState = Record<string, { decision: Decision; edited?: string; notes?: string }>;
 
-export function DemoApp({ notes }: { notes: SampleNote[] }) {
-  const [activeId, setActiveId] = useState(notes[0].id);
+export function DemoApp({
+  notes,
+  initialId,
+}: {
+  notes: SampleNote[];
+  initialId?: string;
+}) {
+  const [activeId, setActiveId] = useState(initialId ?? notes[0].id);
   const [decisions, setDecisions] = useState<Record<string, DecisionState>>({});
   const [hoveredCodeId, setHoveredCodeId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<Record<string, boolean>>({});
