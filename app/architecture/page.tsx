@@ -50,12 +50,15 @@ export default function ArchitecturePage() {
           </li>
           <li>
             <strong className="text-text">Model serving (BAA gate).</strong> Calls go
-            to a foundation model under a signed BAA — Claude via{" "}
-            <strong>AWS Bedrock</strong>, GPT-class via{" "}
+            to a foundation model under a signed BAA — Gemini via{" "}
+            <strong>Google Vertex AI</strong> (HIPAA-eligible under a Google Cloud
+            BAA), Claude via <strong>AWS Bedrock</strong>, GPT-class via{" "}
             <strong>Azure OpenAI Service</strong>, or a self-hosted open model
             (Llama-3, Mistral, MedPaLM-style fine-tune) inside the VPC. The public
-            Anthropic / OpenAI APIs without a BAA are <strong>not</strong> a
-            permissible path.
+            Google AI Studio / Anthropic / OpenAI APIs without a BAA are{" "}
+            <strong>not</strong> a permissible path. The demo on this site uses
+            Google AI Studio because its inputs are synthetic; the only change to
+            run in production is the SDK endpoint and a signed BAA.
           </li>
           <li>
             <strong className="text-text">Code lookup &amp; rule engine.</strong> The

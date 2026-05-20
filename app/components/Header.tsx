@@ -4,6 +4,7 @@ import { Container } from "./Container";
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/demo", label: "Demo" },
+  { href: "/denials", label: "Denials" },
   { href: "/architecture", label: "Architecture" },
   { href: "https://github.com/mrglennc64/medical", label: "GitHub", external: true },
 ];
