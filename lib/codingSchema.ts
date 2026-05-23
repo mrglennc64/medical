@@ -7,7 +7,7 @@ import { z } from "zod";
 export const ModelCodeSchema = z.object({
   system: z.enum(["CPT", "ICD-10-CM", "HCPCS"]),
   code: z.string().min(1).max(20),
-  description: z.string().min(1).max(200),
+  description: z.string().min(1).max(500),
   confidence: z.number().min(0).max(1),
   evidence: z
     .array(
@@ -16,8 +16,8 @@ export const ModelCodeSchema = z.object({
       }),
     )
     .min(1)
-    .max(4),
-  reasoning: z.string().min(1).max(500),
+    .max(8),
+  reasoning: z.string().min(1).max(1000),
 });
 
 export const ModelResponseSchema = z.object({
