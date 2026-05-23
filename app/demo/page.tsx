@@ -5,7 +5,7 @@ import { DemoApp } from "./DemoApp";
 import { SAMPLE_NOTES } from "@/lib/sampleNotes";
 
 export const metadata: Metadata = {
-  title: "Demo — Outpatient E/M coding",
+  title: "Coder — Outpatient E/M coding",
   description:
     "Pick a synthetic clinical note, see suggested CPT and ICD-10 codes with reasoning, NCCI flags, and per-code accept / reject / edit decisions.",
 };
