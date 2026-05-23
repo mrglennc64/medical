@@ -20,7 +20,7 @@ export default function HomePage() {
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
-                  href="/demo"
+                  href="/coder"
                   className="rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-hover"
                 >
                   Open the coder →
@@ -68,7 +68,7 @@ export default function HomePage() {
                 "Evidence-grounded reasoning — model output drops any code whose quote isn't verbatim in the note.",
                 "Per-code accept / reject / edit, then export the coding packet.",
               ]}
-              cta={{ label: "Open the coder", href: "/demo" }}
+              cta={{ label: "Open the coder", href: "/coder" }}
               footnote="For coding visits correctly the first time."
             />
             <WorkflowCard
@@ -234,7 +234,7 @@ export default function HomePage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href="/demo"
+              href="/coder"
               className="rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-hover"
             >
               Open the coder →

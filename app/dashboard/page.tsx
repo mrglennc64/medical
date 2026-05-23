@@ -134,7 +134,7 @@ function ChartRow({ note }: { note: SampleNote }) {
   return (
     <li>
       <Link
-        href={`/demo?chart=${note.id}`}
+        href={`/coder?chart=${note.id}`}
         className="block px-4 py-3 hover:bg-bg-soft transition"
       >
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">

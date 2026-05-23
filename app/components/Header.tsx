@@ -3,7 +3,7 @@ import { Container } from "./Container";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/demo", label: "Coder" },
+  { href: "/coder", label: "Coder" },
   { href: "/denials", label: "Denials" },
   { href: "/architecture", label: "Architecture" },
 ];
