@@ -13,6 +13,7 @@ import {
 import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/codingPrompt";
 import { ptpRisksFor, isCodeInPtpTable } from "@/lib/ncci";
 import type { SuggestedCode } from "@/lib/sampleNotes";
+import { detectPhi, summarizeFindings } from "@/lib/deidentify";
 
 export const runtime = "nodejs";
 
@@ -126,6 +127,28 @@ export async function POST(req: Request) {
     );
   }
   const { note } = parsed.data;
+
+  // Defense in depth: the client also runs detectPhi(), but the server is the
+  // last line before the prompt leaves a non-BAA endpoint. If anything that
+  // looks like PHI got past the client, refuse and tell the caller which
+  // Safe Harbor categories triggered.
+  const phi = detectPhi(note);
+  if (phi.length > 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Note contains content that matches Safe Harbor PHI patterns. " +
+          "This endpoint forwards to the public Gemini API, which is not " +
+          "covered by a BAA. De-identify the note and retry.",
+        phiCategories: summarizeFindings(phi).map((f) => ({
+          category: f.category,
+          label: f.label,
+          count: f.count,
+        })),
+      },
+      { status: 400 },
+    );
+  }
 
   const model = getModel();
   if (!model) {

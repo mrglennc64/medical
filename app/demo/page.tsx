@@ -20,6 +20,23 @@ export default async function DemoPage({
 
   return (
     <div className="bg-bg-muted">
+      <div className="bg-warn/10 border-b border-warn/30">
+        <Container className="py-2 flex items-start gap-2 text-xs text-text">
+          <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-warn text-[10px] font-bold text-white">
+            !
+          </span>
+          <span>
+            <strong>Synthetic data only — no PHI.</strong> Sample notes are
+            MTSamples-style fabrications. The &ldquo;Code your own note&rdquo;
+            form calls the public Gemini API and is{" "}
+            <strong>not</strong> a HIPAA-eligible path. See the{" "}
+            <Link href="/architecture" className="text-brand underline hover:no-underline">
+              architecture page
+            </Link>{" "}
+            for the BAA-gated production route.
+          </span>
+        </Container>
+      </div>
       <Container className="py-8 lg:py-12">
         <header className="mb-6 lg:mb-8">
           <p className="text-sm font-medium text-brand flex items-center gap-2">

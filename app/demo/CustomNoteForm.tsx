@@ -1,7 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { SuggestedCode } from "@/lib/sampleNotes";
+import {
+  deidentify,
+  detectPhi,
+  summarizeFindings,
+  type PhiFinding,
+} from "@/lib/deidentify";
 
 export type CodeApiMeta = {
   model: string;
@@ -26,7 +32,10 @@ export function CustomNoteForm({
   const [note, setNote] = useState(initialNote);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phiBlocked, setPhiBlocked] = useState<PhiFinding[] | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const livePhi = useMemo(() => detectPhi(note), [note]);
 
   async function handleFile(file: File) {
     if (file.size > 200 * 1024) {
@@ -44,28 +53,45 @@ export function CustomNoteForm({
 
   async function submit() {
     setError(null);
+    setPhiBlocked(null);
     if (note.trim().length < 20) {
       setError("Note is too short. Paste at least a chief complaint + a couple lines.");
       return;
     }
+    const findings = detectPhi(note);
+    if (findings.length > 0) {
+      setPhiBlocked(findings);
+      return;
+    }
+    await sendNote(note);
+  }
+
+  async function sendNote(payload: string) {
     setSubmitting(true);
     try {
       const res = await fetch("/api/code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note }),
+        body: JSON.stringify({ note: payload }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data?.error ?? `Request failed (${res.status})`);
         return;
       }
-      onCoded({ note, suggested: data.suggested, meta: data.meta });
+      onCoded({ note: payload, suggested: data.suggested, meta: data.meta });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function redactAndContinue() {
+    const { text } = deidentify(note);
+    setNote(text);
+    setPhiBlocked(null);
+    void sendNote(text);
   }
 
   return (
@@ -75,8 +101,10 @@ export function CustomNoteForm({
         <p className="mt-1 text-sm text-text-muted">
           Paste a clinical note (or upload a <code>.txt</code> file) and the model
           will propose codes. Use synthetic / public data only — this calls the
-          public Gemini API and is <strong>not</strong> a HIPAA-eligible path. The
-          architecture page describes the production BAA route.
+          public Gemini API and is <strong>not</strong> a HIPAA-eligible path. A
+          Safe Harbor PHI detector runs on your input and will block submission
+          if it spots SSNs, MRNs, dated identifiers, addresses, or other
+          §164.514(b)(2) categories.
         </p>
       </header>
 
@@ -125,13 +153,61 @@ export function CustomNoteForm({
         />
 
         <div className="flex items-center justify-between text-xs text-text-subtle">
-          <span>{note.length.toLocaleString()} chars</span>
+          <span>
+            {note.length.toLocaleString()} chars
+            {livePhi.length > 0 && (
+              <span className="ml-2 text-warn">
+                · {livePhi.length} possible PHI match{livePhi.length === 1 ? "" : "es"} detected
+              </span>
+            )}
+          </span>
           <span>powered by Gemini 2.0 Flash · production routes via Vertex AI under BAA</span>
         </div>
 
         {error && (
           <div className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm text-bad">
             {error}
+          </div>
+        )}
+
+        {phiBlocked && phiBlocked.length > 0 && (
+          <div className="rounded-md border border-warn/40 bg-warn/5 p-3 text-sm">
+            <p className="font-semibold text-text">
+              Submission blocked — possible PHI detected
+            </p>
+            <p className="mt-1 text-text-muted">
+              The Safe Harbor detector flagged {phiBlocked.length} identifier
+              {phiBlocked.length === 1 ? "" : "s"} that look like real PHI. This
+              demo runs against the public Gemini API, which is{" "}
+              <strong>not</strong> covered by a BAA. Edit the note to remove
+              them, or auto-redact and continue with the placeholders.
+            </p>
+            <ul className="mt-2 space-y-1 text-xs text-text-muted">
+              {summarizeFindings(phiBlocked).map((f) => (
+                <li key={f.category}>
+                  <span className="font-medium text-text">{f.label}</span> ·{" "}
+                  {f.count} match{f.count === 1 ? "" : "es"} ·{" "}
+                  <span className="font-mono">{f.examples.join(", ")}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setPhiBlocked(null)}
+                className="rounded-md border border-border bg-bg px-3 py-1 text-xs text-text-muted hover:text-text hover:border-border-strong"
+              >
+                I&apos;ll edit it
+              </button>
+              <button
+                type="button"
+                onClick={redactAndContinue}
+                disabled={submitting}
+                className="rounded-md border border-warn/40 bg-warn/10 px-3 py-1 text-xs text-text hover:bg-warn/20"
+              >
+                Auto-redact and continue
+              </button>
+            </div>
           </div>
         )}
 

@@ -12,7 +12,7 @@ export default function ArchitecturePage() {
   return (
     <Container className="py-10 lg:py-14 max-w-3xl">
       <header className="mb-8">
-        <p className="text-sm font-medium text-brand">Architecture · v1</p>
+        <p className="text-sm font-medium text-brand">Architecture · v2</p>
         <h1 className="mt-1 text-3xl font-semibold text-text">
           HIPAA-aware AI medical coding
         </h1>
@@ -24,6 +24,18 @@ export default function ArchitecturePage() {
           such certification body, and any real claim of compliance comes from
           signed BAAs and SOC 2 / HITRUST audits, not a marketing label.
         </p>
+
+        <div className="mt-5 rounded-md border-l-4 border-brand bg-bg-muted p-4">
+          <p className="text-sm font-semibold text-text">
+            Rule 0: PHI never leaves a BAA-covered endpoint.
+          </p>
+          <p className="mt-1 text-sm text-text-muted">
+            No pasting notes into public ChatGPT, Gemini, Grok, or Claude.ai. If a
+            tool that touches the request body doesn&apos;t have a signed BAA, the
+            only thing that can reach it is data run through the Safe Harbor
+            de-identification step first.
+          </p>
+        </div>
       </header>
 
       <section className="mb-10">
@@ -43,10 +55,13 @@ export default function ArchitecturePage() {
             note encrypted at rest (AES-256, customer-managed KMS key).
           </li>
           <li>
-            <strong className="text-text">PHI minimization.</strong> Strip any fields
-            not required for coding (full address, MRN, account numbers). The model
-            sees the clinical narrative + minimal demographic context (age band, sex,
-            visit type), not the patient identity.
+            <strong className="text-text">PHI minimization.</strong> Strip the 18
+            Safe Harbor identifiers (§164.514(b)(2)) before the prompt: names,
+            geographic subdivisions smaller than state, dates more precise than
+            year, phone, fax, email, SSN, MRN, account, plan number, device
+            identifiers, URLs, IPs, biometric IDs, photos, and any other unique
+            identifying number or code. The model sees the clinical narrative
+            plus age band, sex, and visit type — not the patient identity.
           </li>
           <li>
             <strong className="text-text">Model serving (BAA gate).</strong> Calls go
@@ -68,12 +83,15 @@ export default function ArchitecturePage() {
             become flags shown to the human reviewer.
           </li>
           <li>
-            <strong className="text-text">Human-in-the-loop review.</strong> A
-            certified coder reviews each suggestion with the supporting evidence
-            span and chooses <code>accept</code>, <code>reject</code>, or{" "}
-            <code>edit</code> — the same shape as the demo&apos;s decision panel and
-            the worksheet pattern in{" "}
+            <strong className="text-text">Human-in-the-loop review.</strong> Every
+            AI-suggested code is validated by a certified coder before claim
+            submission — AI suggests, a human decides. The reviewer sees the
+            supporting evidence span and chooses <code>accept</code>,{" "}
+            <code>reject</code>, or <code>edit</code> — the same shape as the
+            demo&apos;s decision panel and the worksheet pattern in{" "}
             <code>kataloghub-app/app/api/corrections/worksheet/route.ts</code>.
+            Rejected suggestions are logged back to the vendor for accuracy
+            tuning.
           </li>
           <li>
             <strong className="text-text">Push back to EHR.</strong> Final code set
@@ -99,6 +117,80 @@ export default function ArchitecturePage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-lg font-semibold text-text mb-4">
+          BAA: the clauses that actually matter
+        </h2>
+        <p className="text-sm text-text-muted mb-3">
+          &ldquo;HIPAA-eligible&rdquo; is a vendor checkbox. The BAA is where the
+          eligibility is enforced. Four clauses I look for before signing:
+        </p>
+        <ul className="space-y-2 text-sm text-text-muted list-disc list-inside">
+          <li>
+            <strong className="text-text">No training on PHI.</strong> The vendor
+            cannot use customer prompts, completions, or any payload-derived data
+            to train, fine-tune, or evaluate models — for this customer or any
+            other.
+          </li>
+          <li>
+            <strong className="text-text">No retention after task completion.</strong>{" "}
+            PHI is held only as long as needed to return the response, then
+            deleted. Any cache (prompt cache, KV cache, batch buffer) is scoped to
+            the request and purged.
+          </li>
+          <li>
+            <strong className="text-text">No commingling across tenants.</strong>{" "}
+            Tenant data is logically isolated; no shared embeddings store, no
+            shared evaluation set, no &ldquo;learn from all customers&rdquo;
+            feature.
+          </li>
+          <li>
+            <strong className="text-text">No PHI in vendor logs.</strong> Whatever
+            the vendor logs for debugging, abuse detection, or analytics excludes
+            request/response bodies — or hashes them. PHI in a log line is still
+            a breach.
+          </li>
+        </ul>
+        <p className="mt-3 text-sm text-text-muted">
+          If a vendor won&apos;t put these in writing, the tool is for synthetic
+          or de-identified data only. That covers prototyping; it does not cover
+          production.
+        </p>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-lg font-semibold text-text mb-4">
+          Ongoing compliance
+        </h2>
+        <ul className="space-y-2 text-sm text-text-muted list-disc list-inside">
+          <li>
+            <strong className="text-text">Annual security risk assessment.</strong>{" "}
+            Per §164.308(a)(1)(ii)(A), the SRA runs at minimum yearly — re-map
+            data flows, re-check access controls, re-verify that every PHI hop
+            still ends at a BAA-covered endpoint.
+          </li>
+          <li>
+            <strong className="text-text">Re-assess when a vendor turns on an AI feature.</strong>{" "}
+            A coding tool that adds an &ldquo;AI assist&rdquo; toggle six months
+            after contract signing is a new data flow, even if the vendor calls
+            it an &ldquo;enhancement.&rdquo; Trigger an out-of-cycle SRA and
+            confirm the BAA still covers the new processing path.
+          </li>
+          <li>
+            <strong className="text-text">BAA refresh on vendor change.</strong>{" "}
+            Sub-processor list changes, new AI capabilities, new data residency
+            — any of these require revisiting the agreement, not waiting for the
+            renewal date.
+          </li>
+          <li>
+            <strong className="text-text">Reject-flag feedback loop.</strong>{" "}
+            Coder rejections and edits feed back to the vendor as accuracy
+            signal — without sending the underlying PHI. The signal is &ldquo;code
+            X was wrong in context Y,&rdquo; not the note.
+          </li>
+        </ul>
       </section>
 
       <section className="mb-10">
@@ -155,7 +247,7 @@ const CONTROLS: { title: string; body: string }[] = [
   {
     title: "Business Associate Agreement",
     body:
-      "Signed BAA with the covered entity before any PHI moves; cascading BAAs with the cloud provider and the model provider. No BAA, no PHI — full stop.",
+      "Signed BAA with the covered entity before any PHI moves; cascading BAAs with the cloud provider and the model provider. A vendor that won't sign is disqualified — full stop.",
   },
   {
     title: "Encryption in transit & at rest",
@@ -165,7 +257,7 @@ const CONTROLS: { title: string; body: string }[] = [
   {
     title: "Access controls & audit logs",
     body:
-      "RBAC with MFA, least-privilege IAM. Every PHI read/write/decision logged with user, timestamp, and correlation ID. Logs themselves write-once, append-only.",
+      "RBAC with MFA, least-privilege IAM. Every PHI read/write/decision logged with user, timestamp, and correlation ID — but log records reference a hashed correlation ID, never the note body. Logs themselves write-once, append-only.",
   },
   {
     title: "BAA-gated model serving",
