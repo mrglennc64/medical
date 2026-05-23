@@ -251,10 +251,10 @@ export default function HomePage() {
             systems — autonomous coding, clinical NLP, RCM automation, EHR
             integration.{" "}
             <a
-              href="mailto:mrglenncarter@yahoo.com"
+              href="mailto:mrglenncarter@gmail.com"
               className="text-brand hover:underline"
             >
-              mrglenncarter@yahoo.com
+              mrglenncarter@gmail.com
             </a>
             .
           </p>

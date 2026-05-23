@@ -8,7 +8,7 @@ export function Footer() {
           © {new Date().getFullYear()} — Demo only, no PHI is processed or stored.
         </span>
         <span className="space-x-4">
-          <a href="mailto:mrglenncarter@yahoo.com" className="hover:text-text">
+          <a href="mailto:mrglenncarter@gmail.com" className="hover:text-text">
             Contact
           </a>
         </span>

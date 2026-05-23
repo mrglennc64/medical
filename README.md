@@ -79,4 +79,4 @@ lib/
 
 ## Contact
 
-Glenn Carter · [mrglenncarter@yahoo.com](mailto:mrglenncarter@yahoo.com) · [github.com/mrglennc64](https://github.com/mrglennc64)
+Glenn Carter · [mrglenncarter@gmail.com](mailto:mrglenncarter@gmail.com) · [github.com/mrglennc64](https://github.com/mrglennc64)
