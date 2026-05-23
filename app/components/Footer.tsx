@@ -8,14 +8,6 @@ export function Footer() {
           © {new Date().getFullYear()} Glenn Carter. Demo only — no PHI is processed or stored.
         </span>
         <span className="space-x-4">
-          <a
-            href="https://github.com/mrglennc64/medical"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-text"
-          >
-            GitHub
-          </a>
           <a href="mailto:mrglenncarter@yahoo.com" className="hover:text-text">
             Contact
           </a>

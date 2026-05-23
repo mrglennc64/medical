@@ -37,14 +37,6 @@ export default function HomePage() {
             >
               Try the denial engine →
             </Link>
-            <a
-              href="https://github.com/mrglennc64/medical"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-border px-4 py-2.5 text-sm font-medium text-text-muted hover:text-text hover:border-border-strong"
-            >
-              GitHub ↗
-            </a>
           </div>
           <p className="mt-6 text-xs text-text-subtle">
             Built by Glenn Carter. Demo runs on hardcoded synthetic notes — no
@@ -123,8 +115,8 @@ const POINTS: { title: string; body: string }[] = [
       "Architecture page names where PHI flows at every hop and which model-serving paths are BAA-eligible. No “HIPAA compliant” marketing label.",
   },
   {
-    title: "Deployable and inspectable",
+    title: "Live and deployed",
     body:
-      "Next.js 16 App Router, no API keys required for the demo, Vercel-ready. Source on GitHub with a clean README.",
+      "Next.js 16 App Router running at medi.usesmpt.com under TLS, with a documented migration path from this public host to BAA-covered infrastructure for real-PHI evaluation.",
   },
 ];
