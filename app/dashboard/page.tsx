@@ -4,7 +4,7 @@ import { Container } from "@/app/components/Container";
 import { SAMPLE_NOTES, STATS, type SampleNote, type QueueStatus } from "@/lib/sampleNotes";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Coder workspace | Glenn Carter",
+  title: "Dashboard — Coder workspace",
   description:
     "Coder workspace: KPI strip, queue of charts awaiting review, and a recently-completed log.",
 };
@@ -20,7 +20,7 @@ export default function DashboardPage() {
         <header className="mb-6">
           <p className="text-sm font-medium text-brand">Coder workspace</p>
           <h1 className="mt-1 text-2xl lg:text-3xl font-semibold text-text">
-            Glenn&apos;s queue
+            Today&apos;s queue
           </h1>
           <p className="mt-2 text-sm text-text-muted">
             What a certified coder sees on log-in. KPIs are last-7-day
@@ -233,7 +233,7 @@ function Sidebar() {
       </section>
 
       <section className="rounded-lg border border-border bg-bg-muted p-4 text-xs text-text-muted">
-        Built by Glenn Carter. All data is synthetic — no PHI.{" "}
+        All data is synthetic — no PHI.{" "}
         <Link href="/architecture" className="text-brand hover:underline">
           See the production architecture →
         </Link>

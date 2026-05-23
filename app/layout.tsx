@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Medical Coding Demo — Glenn Carter",
+  title: "AI Medical Coding & Denial Correction Platform",
   description:
-    "Working demo of an autonomous outpatient E/M coding assistant on de-identified MTSamples-style notes, with a HIPAA-aware production architecture.",
+    "One platform for outpatient coding and denial correction: from a clinical note to billable codes, and from a denied claim to a corrected appeal — with justification spans, NCCI flags, and a HIPAA-aware production architecture.",
   openGraph: {
-    title: "AI Medical Coding Demo — Glenn Carter",
+    title: "AI Medical Coding & Denial Correction Platform",
     description:
-      "Outpatient E/M coding assistant: paste a note, get suggested CPT + ICD-10 codes with reasoning, NCCI flags, and per-code accept/reject/edit decisions.",
+      "One platform for outpatient coding and denial correction: from a clinical note to billable codes, and from a denied claim to a corrected appeal.",
     type: "website",
   },
 };

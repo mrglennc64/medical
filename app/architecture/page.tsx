@@ -3,7 +3,7 @@ import { Container } from "@/app/components/Container";
 import { DataFlowDiagram } from "./DataFlowDiagram";
 
 export const metadata: Metadata = {
-  title: "Architecture — HIPAA-aware AI medical coding | Glenn Carter",
+  title: "Architecture — HIPAA-aware AI medical coding",
   description:
     "Production architecture for an AI medical coding service: data flow from EHR to coded chart, BAA-gated model serving, encryption, audit logging, and honest limitations.",
 };

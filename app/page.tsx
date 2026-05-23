@@ -247,9 +247,9 @@ export default function HomePage() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-text-subtle">
-            Built by Glenn Carter. Available for remote contract or full-time
-            work on healthcare-AI systems — autonomous coding, clinical NLP,
-            RCM automation, EHR integration.{" "}
+            Available for remote contract or full-time work on healthcare-AI
+            systems — autonomous coding, clinical NLP, RCM automation, EHR
+            integration.{" "}
             <a
               href="mailto:mrglenncarter@yahoo.com"
               className="text-brand hover:underline"

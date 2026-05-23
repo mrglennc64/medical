@@ -5,7 +5,7 @@ import { DenialWorkspace } from "./DenialWorkspace";
 import { SAMPLE_DENIALS } from "@/lib/denial/sampleDenials";
 
 export const metadata: Metadata = {
-  title: "Denial Engine — Analyze, correct, appeal | Glenn Carter",
+  title: "Denial Engine — Analyze, correct, appeal",
   description:
     "Working AI demo for outpatient denial management: paste an EOB excerpt, get a structured denial analysis, a proposed correction, and a payer-ready appeal letter.",
 };
