@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Medical Coding & Denial Correction Platform",
+  title: "Medical Coding & Denial Correction Platform",
   description:
     "One platform for outpatient coding and denial correction: from a clinical note to billable codes, and from a denied claim to a corrected appeal — with justification spans, NCCI flags, and a HIPAA-aware production architecture.",
   openGraph: {
-    title: "AI Medical Coding & Denial Correction Platform",
+    title: "Medical Coding & Denial Correction Platform",
     description:
       "One platform for outpatient coding and denial correction: from a clinical note to billable codes, and from a denied claim to a corrected appeal.",
     type: "website",

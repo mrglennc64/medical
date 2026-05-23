@@ -9,7 +9,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-[2.1fr_1.4fr] gap-10 lg:gap-12 items-start">
             <div>
               <p className="text-sm font-medium text-brand">
-                AI medical coding · portfolio
+                Medical coding · portfolio
               </p>
               <h1 className="mt-2 text-4xl lg:text-5xl font-semibold leading-tight tracking-tight text-text">
                 One platform for outpatient coding and denial correction.
@@ -171,7 +171,7 @@ export default function HomePage() {
             />
             <Card
               compact
-              title="Healthcare-AI teams"
+              title="Healthcare engineering teams"
               bullets={[
                 "Working, inspectable architecture for coding and denials.",
                 "Reference implementation for real-world workflows.",

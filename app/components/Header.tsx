@@ -3,7 +3,7 @@ import { Container } from "./Container";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/demo", label: "Demo" },
+  { href: "/demo", label: "Coder" },
   { href: "/denials", label: "Denials" },
   { href: "/architecture", label: "Architecture" },
 ];
@@ -14,7 +14,7 @@ export function Header() {
       <Container className="flex h-14 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-semibold text-text">
           <span className="inline-block h-6 w-6 rounded-md bg-brand" aria-hidden />
-          <span>AI Medical Coding</span>
+          <span>Medical Coding</span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
           {NAV.map((item) => (

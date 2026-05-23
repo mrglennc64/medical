@@ -3,9 +3,9 @@ import { Container } from "@/app/components/Container";
 import { DataFlowDiagram } from "./DataFlowDiagram";
 
 export const metadata: Metadata = {
-  title: "Architecture — HIPAA-aware AI medical coding",
+  title: "Architecture — HIPAA-aware medical coding",
   description:
-    "Production architecture for an AI medical coding service: data flow from EHR to coded chart, BAA-gated model serving, encryption, audit logging, and honest limitations.",
+    "Production architecture for a medical coding service: data flow from EHR to coded chart, BAA-gated model serving, encryption, audit logging, and honest limitations.",
 };
 
 export default function ArchitecturePage() {
@@ -14,7 +14,7 @@ export default function ArchitecturePage() {
       <header className="mb-8">
         <p className="text-sm font-medium text-brand">Architecture · v2</p>
         <h1 className="mt-1 text-3xl font-semibold text-text">
-          HIPAA-aware AI medical coding
+          HIPAA-aware medical coding
         </h1>
         <p className="mt-3 text-text-muted">
           The portfolio demo is hardcoded so it never breaks and never touches PHI.
