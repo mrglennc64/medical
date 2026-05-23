@@ -6,7 +6,6 @@ const NAV = [
   { href: "/demo", label: "Demo" },
   { href: "/denials", label: "Denials" },
   { href: "/architecture", label: "Architecture" },
-  { href: "https://github.com/mrglennc64/medical", label: "GitHub", external: true },
 ];
 
 export function Header() {
@@ -19,27 +18,15 @@ export function Header() {
           <span className="text-text-subtle font-normal">— Glenn Carter</span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
-          {NAV.map((item) =>
-            item.external ? (
-              <a
-                key={item.href}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 text-sm text-text-muted hover:text-text"
-              >
-                {item.label} ↗
-              </a>
-            ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-3 py-1.5 text-sm text-text-muted hover:text-text"
-              >
-                {item.label}
-              </Link>
-            ),
-          )}
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="px-3 py-1.5 text-sm text-text-muted hover:text-text"
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </Container>
     </header>
