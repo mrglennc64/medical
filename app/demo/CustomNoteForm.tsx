@@ -31,24 +31,62 @@ export function CustomNoteForm({
 }) {
   const [note, setNote] = useState(initialNote);
   const [submitting, setSubmitting] = useState(false);
+  const [extracting, setExtracting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [phiBlocked, setPhiBlocked] = useState<PhiFinding[] | null>(null);
+  const [extractedFrom, setExtractedFrom] = useState<{
+    filename: string;
+    kind: string;
+    pages?: number;
+  } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const livePhi = useMemo(() => detectPhi(note), [note]);
 
   async function handleFile(file: File) {
-    if (file.size > 200 * 1024) {
-      setError("File too large — limit is 200 KB. Paste shorter excerpts.");
-      return;
-    }
-    if (!/\.(txt|md)$/i.test(file.name) && file.type !== "text/plain") {
-      setError("Only plain-text files (.txt, .md) for v1. Paste-text works for anything.");
-      return;
-    }
-    const text = await file.text();
-    setNote(text);
     setError(null);
+    if (file.size > 2 * 1024 * 1024) {
+      setError("File too large — limit is 2 MB.");
+      return;
+    }
+    const ext = file.name.toLowerCase();
+    const isPlainText =
+      file.type === "text/plain" || ext.endsWith(".txt") || ext.endsWith(".md");
+
+    if (isPlainText) {
+      const text = await file.text();
+      setNote(text);
+      setExtractedFrom(null);
+      return;
+    }
+
+    const isPdfOrDocx = ext.endsWith(".pdf") || ext.endsWith(".docx");
+    if (!isPdfOrDocx) {
+      setError("Supported file types: .txt, .md, .pdf, .docx");
+      return;
+    }
+
+    setExtracting(file.name);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/extract", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? `Extraction failed (${res.status})`);
+        return;
+      }
+      setNote(data.text);
+      setExtractedFrom({
+        filename: data.filename,
+        kind: data.kind,
+        pages: data.pages,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Extraction failed");
+    } finally {
+      setExtracting(null);
+    }
   }
 
   async function submit() {
@@ -99,12 +137,18 @@ export function CustomNoteForm({
       <header className="mb-4">
         <h2 className="text-lg font-semibold text-text">Code your own note</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Paste a clinical note (or upload a <code>.txt</code> file) and the model
-          will propose codes. Use synthetic / public data only — this calls the
-          public Gemini API and is <strong>not</strong> a HIPAA-eligible path. A
-          Safe Harbor PHI detector runs on your input and will block submission
-          if it spots SSNs, MRNs, dated identifiers, addresses, or other
-          §164.514(b)(2) categories.
+          Paste a clinical note, or upload <code>.txt</code>, <code>.md</code>,{" "}
+          <code>.pdf</code>, or <code>.docx</code> — the server extracts plain
+          text and the model proposes codes. Use synthetic / public data only —
+          this calls the public Gemini API and is <strong>not</strong> a
+          HIPAA-eligible path. A Safe Harbor PHI detector runs on your input and
+          will block submission if it spots SSNs, MRNs, dated identifiers,
+          addresses, or other §164.514(b)(2) categories. Real-PHI evaluation
+          happens in a separate BAA-covered environment — see the{" "}
+          <a href="/architecture" className="text-brand hover:underline">
+            architecture page
+          </a>
+          .
         </p>
       </header>
 
@@ -113,15 +157,15 @@ export function CustomNoteForm({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            disabled={submitting}
-            className="rounded-md border border-border bg-bg-soft px-3 py-1.5 text-sm text-text hover:border-border-strong"
+            disabled={submitting || extracting !== null}
+            className="rounded-md border border-border bg-bg-soft px-3 py-1.5 text-sm text-text hover:border-border-strong disabled:opacity-50"
           >
-            Upload .txt
+            {extracting ? `Extracting ${extracting}…` : "Upload .txt / .pdf / .docx"}
           </button>
           <input
             ref={fileRef}
             type="file"
-            accept=".txt,.md,text/plain"
+            accept=".txt,.md,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -143,10 +187,38 @@ export function CustomNoteForm({
           </button>
         </div>
 
+        {extractedFrom && (
+          <div className="flex items-center gap-2 rounded-md border border-border bg-bg-soft px-3 py-1.5 text-xs text-text-muted">
+            <span className="font-mono uppercase text-[10px] text-brand">
+              {extractedFrom.kind}
+            </span>
+            <span>
+              Extracted from <span className="font-mono">{extractedFrom.filename}</span>
+              {extractedFrom.pages != null && (
+                <> · {extractedFrom.pages} page{extractedFrom.pages === 1 ? "" : "s"}</>
+              )}
+              {" "}— review the text below before coding.
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setNote("");
+                setExtractedFrom(null);
+              }}
+              className="ml-auto text-text-subtle hover:text-text"
+            >
+              clear
+            </button>
+          </div>
+        )}
+
         <textarea
           value={note}
-          onChange={(e) => setNote(e.target.value)}
-          disabled={submitting}
+          onChange={(e) => {
+            setNote(e.target.value);
+            if (extractedFrom) setExtractedFrom(null);
+          }}
+          disabled={submitting || extracting !== null}
           rows={14}
           placeholder="CHIEF COMPLAINT: ...&#10;HPI: ...&#10;EXAM: ...&#10;ASSESSMENT/PLAN: ...&#10;Time: ..."
           className="w-full rounded-md border border-border bg-bg p-3 font-mono text-sm leading-6 text-text"

@@ -195,6 +195,53 @@ export default function ArchitecturePage() {
 
       <section className="mb-10">
         <h2 className="text-lg font-semibold text-text mb-4">
+          From this public demo to a private BAA testbed
+        </h2>
+        <p className="text-sm text-text-muted mb-3">
+          The site you&apos;re reading is a public demo on synthetic data. If a
+          prospect signs a BAA and wants to evaluate against real charts, the
+          live data does <em>not</em> go through{" "}
+          <code>medi.usesmpt.com</code>. The codebase deploys a second time
+          into a private environment with different config. The deltas:
+        </p>
+        <div className="overflow-x-auto rounded-md border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-bg-muted text-text">
+              <tr>
+                <th className="text-left font-semibold px-3 py-2 border-b border-border">
+                  Concern
+                </th>
+                <th className="text-left font-semibold px-3 py-2 border-b border-border">
+                  Public demo (this URL)
+                </th>
+                <th className="text-left font-semibold px-3 py-2 border-b border-border">
+                  Private testbed (post-BAA)
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-text-muted">
+              {TESTBED_DELTAS.map((row, i) => (
+                <tr key={row.concern} className={i % 2 ? "bg-bg-muted/40" : ""}>
+                  <td className="px-3 py-2 align-top font-medium text-text">
+                    {row.concern}
+                  </td>
+                  <td className="px-3 py-2 align-top">{row.publicDemo}</td>
+                  <td className="px-3 py-2 align-top">{row.privateTestbed}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-sm text-text-muted mt-3">
+          The codebase is one deploy target; the surrounding infrastructure is
+          what changes. Standing up the private testbed is a config swap and a
+          DNS record, not a rewrite — typically a one-day setup after BAA
+          execution.
+        </p>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-lg font-semibold text-text mb-4">
           Honest limitations of this prototype
         </h2>
         <ul className="space-y-2 text-sm text-text-muted list-disc list-inside">
@@ -242,6 +289,55 @@ export default function ArchitecturePage() {
     </Container>
   );
 }
+
+const TESTBED_DELTAS: {
+  concern: string;
+  publicDemo: string;
+  privateTestbed: string;
+}[] = [
+  {
+    concern: "Host",
+    publicDemo: "Hostinger shared VPS — no HIPAA BAA available",
+    privateTestbed: "AWS / GCP / Azure region under a signed BAA",
+  },
+  {
+    concern: "Model endpoint",
+    publicDemo: "Public Gemini API (not BAA-eligible)",
+    privateTestbed: "Vertex AI, Bedrock, or Azure OpenAI under BAA",
+  },
+  {
+    concern: "PHI guard",
+    publicDemo: "Safe Harbor detector blocks submission",
+    privateTestbed: "Detector still runs, but as audit-only logging — PHI is permitted",
+  },
+  {
+    concern: "Banner",
+    publicDemo: "“Synthetic data only — no PHI”",
+    privateTestbed: "“Authorized BAA testing · Client: ⟨name⟩ · Engagement: ⟨id⟩”",
+  },
+  {
+    concern: "Access",
+    publicDemo: "Open to the public internet",
+    privateTestbed: "IP allow-list, basic auth or SSO, optionally mTLS",
+  },
+  {
+    concern: "Audit log",
+    publicDemo: "Dev-only console output",
+    privateTestbed:
+      "Append-only log: timestamp, user, hashed correlation ID, outcome — never the note body",
+  },
+  {
+    concern: "Data retention",
+    publicDemo: "No persistence — request-scoped",
+    privateTestbed:
+      "Configurable per engagement (default: no persistence; opt-in encrypted store for QA review)",
+  },
+  {
+    concern: "URL",
+    publicDemo: "medi.usesmpt.com",
+    privateTestbed: "medi-private.⟨client⟩.usesmpt.com or per-client subdomain",
+  },
+];
 
 const CONTROLS: { title: string; body: string }[] = [
   {
