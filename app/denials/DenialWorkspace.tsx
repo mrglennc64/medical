@@ -173,6 +173,19 @@ export function DenialWorkspace({ samples }: { samples: SampleDenial[] }) {
   const canAnalyze = !analyze.loading && denialText.trim().length >= 30;
   const canCorrect = !correct.loading && !!analyze.data;
   const canAppeal = !appeal.loading && !!correct.data;
+  const canExport = !!analyze.data && !!correct.data && !!appeal.data;
+
+  function exportPdf() {
+    if (!analyze.data || !correct.data || !appeal.data) return;
+    openPacketPrintWindow({
+      denialText,
+      claimContext,
+      analysis: analyze.data,
+      correction: correct.data,
+      appeal: appeal.data,
+      meta: appealMeta,
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -257,6 +270,20 @@ export function DenialWorkspace({ samples }: { samples: SampleDenial[] }) {
 
       <StepCard label="3. Appeal packet" meta={appealMeta}>
         <AppealPanel state={appeal} />
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <p className="text-xs text-text-subtle">
+            {canExport
+              ? "Exports analysis, correction, and appeal letter as one print-ready case file."
+              : "Complete all three steps to export the full packet."}
+          </p>
+          <PrimaryButton
+            onClick={exportPdf}
+            disabled={!canExport}
+            loading={false}
+          >
+            Download packet (PDF)
+          </PrimaryButton>
+        </div>
       </StepCard>
     </div>
   );
@@ -579,6 +606,169 @@ function CodeList({ label, items }: { label: string; items: string[] }) {
       )}
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// PDF export — open a self-contained print window and trigger Save-as-PDF.
+// Zero dependencies: the new document carries its own inline styles, so it is
+// independent of the app's Tailwind. The browser's print dialog handles the
+// actual "Save as PDF".
+// ---------------------------------------------------------------------------
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function codeRow(label: string, items: string[]): string {
+  const body =
+    items.length === 0
+      ? '<span class="muted">—</span>'
+      : items.map((i) => `<span class="code">${escapeHtml(i)}</span>`).join(" ");
+  return `<tr><th>${escapeHtml(label)}</th><td>${body}</td></tr>`;
+}
+
+function openPacketPrintWindow(packet: {
+  denialText: string;
+  claimContext: string;
+  analysis: DenialAnalysis;
+  correction: DenialCorrection;
+  appeal: AppealPacket;
+  meta: Meta | null;
+}): void {
+  const { denialText, claimContext, analysis, correction, appeal, meta } =
+    packet;
+  const confidencePct = Math.round(
+    Math.max(0, Math.min(1, analysis.confidence)) * 100,
+  );
+  const attachments =
+    appeal.suggestedAttachments.length === 0
+      ? '<p class="muted">None suggested.</p>'
+      : `<ul>${appeal.suggestedAttachments
+          .map((a) => `<li>${escapeHtml(a)}</li>`)
+          .join("")}</ul>`;
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Appeal packet${analysis.claimId ? " — " + escapeHtml(analysis.claimId) : ""}</title>
+<style>
+  @page { size: letter; margin: 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font: 11pt/1.5 "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1a1a1a; margin: 0; padding: 24px;
+  }
+  h1 { font-size: 18pt; margin: 0 0 2px; }
+  h2 {
+    font-size: 12pt; margin: 26px 0 8px; padding-bottom: 4px;
+    border-bottom: 1px solid #d0d0d0; text-transform: uppercase;
+    letter-spacing: 0.04em; color: #444;
+  }
+  .sub { color: #666; font-size: 9.5pt; margin: 0 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+  th, td { text-align: left; vertical-align: top; padding: 4px 8px 4px 0; }
+  th { width: 200px; font-weight: 600; color: #444; }
+  .code {
+    font-family: "Cascadia Code", Consolas, monospace; font-size: 10pt;
+    background: #f1f1f1; border: 1px solid #e0e0e0; border-radius: 3px;
+    padding: 1px 5px; margin-right: 2px; display: inline-block;
+  }
+  .muted { color: #888; }
+  .letter, .pre {
+    white-space: pre-wrap; word-wrap: break-word;
+  }
+  .letter { margin-top: 4px; }
+  .pre {
+    font-family: "Cascadia Code", Consolas, monospace; font-size: 9.5pt;
+    background: #fafafa; border: 1px solid #e6e6e6; border-radius: 4px;
+    padding: 10px 12px;
+  }
+  ul { margin: 4px 0; padding-left: 20px; }
+  li { margin: 2px 0; }
+  .disclaimer {
+    margin-top: 28px; padding-top: 10px; border-top: 1px solid #d0d0d0;
+    font-size: 8.5pt; color: #777;
+  }
+  .meta { font-size: 8.5pt; color: #999; margin-top: 2px; }
+</style>
+</head>
+<body>
+  <h1>Denial Appeal Packet</h1>
+  <p class="sub">
+    ${analysis.payer ? escapeHtml(analysis.payer) : "Payer not identified"}
+    ${analysis.claimId ? " · Claim " + escapeHtml(analysis.claimId) : ""}
+    ${analysis.denialCode ? " · Denial " + escapeHtml(analysis.denialCode) : ""}
+  </p>
+  ${meta ? `<p class="meta">Generated by ${escapeHtml(meta.model)} · ${meta.latencyMs}ms</p>` : ""}
+
+  <h2>1 · Denial analysis</h2>
+  <table>
+    <tr><th>Denial code</th><td>${analysis.denialCode ? `<span class="code">${escapeHtml(analysis.denialCode)}</span>` : '<span class="muted">—</span>'}</td></tr>
+    <tr><th>Category</th><td>${escapeHtml(analysis.denialCategory)}</td></tr>
+    <tr><th>Payer</th><td>${analysis.payer ? escapeHtml(analysis.payer) : '<span class="muted">—</span>'}</td></tr>
+    <tr><th>Claim ID</th><td>${analysis.claimId ? escapeHtml(analysis.claimId) : '<span class="muted">—</span>'}</td></tr>
+    <tr><th>Confidence</th><td>${confidencePct}%</td></tr>
+    <tr><th>Reason (from payer)</th><td>${escapeHtml(analysis.reasonText)}</td></tr>
+    <tr><th>Suggested root cause</th><td>${escapeHtml(analysis.suggestedRootCause)}</td></tr>
+  </table>
+
+  <h2>2 · Proposed correction</h2>
+  <table>
+    ${codeRow("Corrected CPT/HCPCS", correction.correctedCodes)}
+    ${codeRow("Modifiers", correction.correctedModifiers)}
+    ${codeRow("ICD-10-CM", correction.correctedDiagnosisCodes)}
+  </table>
+  <p style="margin-top:8px"><strong>Rationale</strong></p>
+  <div class="letter">${escapeHtml(correction.correctionRationale)}</div>
+
+  <h2>3 · Appeal letter</h2>
+  <div class="letter">${escapeHtml(appeal.appealLetter)}</div>
+
+  <h2>Suggested attachments</h2>
+  ${attachments}
+
+  <h2>Submission instructions</h2>
+  <div class="letter">${escapeHtml(appeal.payerInstructions)}</div>
+
+  <h2>Source inputs</h2>
+  <p class="sub">Denial text</p>
+  <div class="pre">${escapeHtml(denialText)}</div>
+  <p class="sub" style="margin-top:10px">Claim context</p>
+  <div class="pre">${escapeHtml(claimContext)}</div>
+
+  <p class="disclaimer">
+    Synthetic demo output — no PHI. Not legal, billing, or coding advice.
+    Generated by a HIPAA-aware demo; review by a certified coder against
+    payer-specific policy is required before any production claim is corrected
+    or appealed.
+  </p>
+</body>
+</html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) {
+    // Popup blocked — fall back to printing the current document is not ideal,
+    // so surface nothing and let the user retry. (Most browsers allow this
+    // because it is triggered by a user click.)
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  // Give the new document a tick to lay out before invoking print.
+  const triggerPrint = () => win.print();
+  if (win.document.readyState === "complete") {
+    setTimeout(triggerPrint, 150);
+  } else {
+    win.onload = () => setTimeout(triggerPrint, 150);
+  }
 }
 
 function CopyButton({ text }: { text: string }) {
