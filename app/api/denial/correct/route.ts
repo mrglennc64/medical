@@ -10,6 +10,7 @@ import {
   CORRECT_SYSTEM_PROMPT,
   buildCorrectUserPrompt,
 } from "@/lib/denial/prompts";
+import { generateWithRetry, isTransientModelError } from "@/lib/geminiRetry";
 
 export const runtime = "nodejs";
 
@@ -75,12 +76,22 @@ export async function POST(req: Request) {
   const t0 = Date.now();
   let raw: string;
   try {
-    const result = await model.generateContent(
+    const result = await generateWithRetry(
+      model,
       buildCorrectUserPrompt(denialText, claimContext, analysis),
     );
     raw = result.response.text();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    if (isTransientModelError(err)) {
+      return NextResponse.json(
+        {
+          error:
+            "The model is temporarily overloaded. Please try again in a moment.",
+        },
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
       { error: `Model call failed: ${message}` },
       { status: 502 },

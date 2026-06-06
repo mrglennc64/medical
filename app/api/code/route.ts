@@ -14,6 +14,7 @@ import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/codingPrompt";
 import { ptpRisksFor, isCodeInPtpTable } from "@/lib/ncci";
 import type { SuggestedCode } from "@/lib/sampleNotes";
 import { detectPhi, summarizeFindings } from "@/lib/deidentify";
+import { generateWithRetry, isTransientModelError } from "@/lib/geminiRetry";
 
 export const runtime = "nodejs";
 
@@ -164,10 +165,19 @@ export async function POST(req: Request) {
   const t0 = Date.now();
   let raw: string;
   try {
-    const result = await model.generateContent(buildUserPrompt(note));
+    const result = await generateWithRetry(model, buildUserPrompt(note));
     raw = result.response.text();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    if (isTransientModelError(err)) {
+      return NextResponse.json(
+        {
+          error:
+            "The model is temporarily overloaded. Please try again in a moment.",
+        },
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
       { error: `Model call failed: ${message}` },
       { status: 502 },
